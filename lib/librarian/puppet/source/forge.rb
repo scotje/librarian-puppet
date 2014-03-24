@@ -111,7 +111,11 @@ module Librarian
             # Check for bad exit code
             unless $? == 0
               # Rollback the directory if the puppet module had an error
-              path.unlink
+              begin
+                path.unlink
+              rescue => e
+                warn("Unable to rollback path #{path}: #{e}")
+              end
               raise Error, "Error executing puppet module install:\n#{command}\nError:\n#{output}"
             end
 
