@@ -43,6 +43,10 @@ end
 
 PUPPET_VERSION=out.split(' ').first.strip
 
+if out =~ /Puppet Enterprise/
+  PE_VERSION=out.match(/\(Puppet Enterprise (?<pe_ver>.+)\)/)[:pe_ver].gsub(/[^\d\.]/,'') rescue nil
+end
+
 require 'librarian/puppet/extension'
 require 'librarian/puppet/version'
 

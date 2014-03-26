@@ -103,8 +103,11 @@ module Librarian
 
             target = vendored?(name, version) ? vendored_path(name, version) : name
 
+            # Newer versions of PMT expect to communicate directly with Forge API.
+            repo = (pmt_uses_v3? && (source =~ /forge\.puppetlabs\.com/i)) ? 'https://forgeapi.puppetlabs.com' : source
 
-            command = "puppet module install --version #{version} --target-dir '#{path}' --module_repository '#{source}' --modulepath '#{path}' --module_working_dir '#{path}' --ignore-dependencies '#{target}'"
+
+            command = "puppet module install --version #{version} --target-dir '#{path}' --module_repository '#{repo}' --modulepath '#{path}' --module_working_dir '#{path}' --ignore-dependencies '#{target}'"
             debug { "Executing puppet module install for #{name} #{version}" }
             output = `#{command}`
 
@@ -124,6 +127,20 @@ module Librarian
             if puppet_version < min_version
               raise Error, "To get modules from the forge, we use the puppet faces module command. For this you need at least puppet version 2.7.13 and you have #{puppet_version}"
             end
+          end
+
+          def pmt_uses_v3?
+            if defined?(PE_VERSION) && !PE_VERSION.nil?
+              min_version = Gem::Version.create('3.2.0')
+              pe_version = Gem::Version.create(PE_VERSION)
+
+              return pe_version >= min_version
+            end
+
+            # TODO: Future versions of open source Puppet module tool will also
+            # use v3 API, checks for that version snould be made here.
+
+            return false
           end
 
           def vendored?(name, version)
