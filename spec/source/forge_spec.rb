@@ -10,11 +10,15 @@ describe Forge do
   subject { Forge.new(environment, uri) }
 
   before do
-    Librarian::Puppet.should_receive(:puppet_version).and_return(puppet_version)
+    Librarian::Puppet.should_receive(:puppet_version).at_least(:once).and_return(puppet_version)
   end
 
   describe "#check_puppet_module_options" do
     context "Puppet OS" do
+      context "3.6.0" do
+        let(:puppet_version) { "3.6.0" }
+        it { Forge.client_api_version().should == 3 }
+      end
       context "3.4.3" do
         let(:puppet_version) { "3.4.3" }
         it { Forge.client_api_version().should == 1 }
